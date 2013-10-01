@@ -1,26 +1,36 @@
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <inttypes.h>
 
-#define READ_COUNTER_ADDR 0x40050000
+#define FILE_DIR "/tmp/test.txt"
 
-int32_t *read_counter = (int32_t *) READ_COUNTER_ADDR;
 int main(void)
 {
-	printf("This is a test program for QEMU counter device\n");
-	printf("See http://github.com/krasin/qemu-counter for more details\n\n");
-	printf("Let's check if the Read Counter device presented\n");
-	for (int i = 0; i < 10; i++) {
-		printf("The device has been accessed for %"PRId32" times!\n", *read_counter);
-	}
-	int32_t now = *read_counter;
-	if (now == 0) {
-		printf("ERROR - No Read Counter detected\n");
-	}
-	else if (now == 11) {
-		printf("OK - Read Counter works as intended\n");
-	}
-	else {
-		printf("ERROR - Something is wrong with Read Counter\n");
-	}
-	return 0;
+
+/* test semihost call: open, read, close */
+
+    FILE *fd;
+    unsigned char buff[100];
+    char str[20] = "Hello World!!!";
+    fd = fopen(FILE_DIR, "w");
+    if(fd == NULL){
+        printf("error\n\r");
+        return 0;
+    }//End of if
+
+    printf("the string \"%s\" is write into file: %s\n\r",str,FILE_DIR );
+    fprintf(fd, "%s", &str);
+    fclose(fd);
+
+    fd = fopen(FILE_DIR, "r");
+    if(fd == NULL){
+        printf("error\n\r");
+        return 0;
+    }
+    fread(buff, sizeof(buff),1,fd);
+    printf("\"%s\" is read from: %s\n\r", buff, FILE_DIR);
+    fclose(fd);
+    
+    return 0;
 }
